@@ -1,14 +1,13 @@
-// api/gemini.js
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const OPENROUTER_API_KEY = "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";
+  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY; // ✅ Uses Vercel env var!
   const prompt = req.body.prompt || "Hello from Gemini via OpenRouter!";
 
   const body = {
-    model: "mistralai/mistral-7b-instruct", // ✅ Or "google/gemini-pro" if available
+    model: "mistralai/mistral-7b-instruct",
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
     max_tokens: 1024

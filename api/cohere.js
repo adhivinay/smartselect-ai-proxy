@@ -1,10 +1,9 @@
-// api/cohere.js
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const COHERE_API_KEY = "3GGbGIxtdgfW4PeYRxqWHjfj40snRQvMgObqocDE";
+  const COHERE_API_KEY = process.env.COHERE_API_KEY; // ✅ Uses Vercel env var!
   const prompt = req.body.prompt || "Hello from Cohere!";
 
   const body = {
