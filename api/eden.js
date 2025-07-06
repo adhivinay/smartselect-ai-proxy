@@ -5,6 +5,8 @@ export default async function handler(req, res) {
 
   const { prompt } = req.body;
 
+  console.log("EDENAI_API_KEY:", process.env.EDENAI_API_KEY); // TEMP: confirm it's set
+
   try {
     const edenResponse = await fetch("https://api.edenai.run/v2/text/generation", {
       method: "POST",
@@ -13,17 +15,20 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        providers: "openai",  // or any provider you want
+        providers: "openai",
         text: prompt,
         temperature: 0.7,
         max_tokens: 150
       })
     });
 
-    const data = await edenResponse.json();
+    const text = await edenResponse.text();
+    console.log("Eden AI raw response:", text);
+
+    const data = JSON.parse(text);
     res.status(200).json(data);
   } catch (error) {
-    console.error(error);
+    console.error("Proxy error:", error);
     res.status(500).json({ error: "Failed to connect to Eden AI" });
   }
 }
