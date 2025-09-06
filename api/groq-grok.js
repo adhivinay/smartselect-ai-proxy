@@ -1,18 +1,7 @@
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+// groq-grok.js
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
+export async function getGrokResponse(prompt = "Hello from Grok (Groq)!") {
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
-  const prompt = req.body.prompt || "Hello from Grok (Groq)!";
 
   const body = {
     model: "llama3-70b-8192",
@@ -30,9 +19,26 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    res.status(200).json(data);
+    const reply = data?.choices?.[0]?.message?.content || "No response from Grok.";
+    return reply;
   } catch (err) {
-    console.error("Groq error:", err);
-    res.status(500).json({ error: "Groq proxy error", message: err.message });
+    console.error("Grok error:", err);
+    return "Error fetching Grok response.";
   }
 }
+
+// Optional: keep original endpoint handler
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+  const prompt = req.body.prompt || "Hello from Grok (Groq)!";
+  const reply = await getGrokResponse(prompt);
+  res.status(200).json({ reply });
+}
+
+
