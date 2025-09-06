@@ -1,18 +1,7 @@
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+// gemini.js
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
+export async function getGeminiResponse(prompt = "Hello from Gemini!") {
   const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-  const prompt = req.body.prompt || "Hello from Gemini!";
 
   const body = {
     model: "mistralai/mistral-7b-instruct",
@@ -32,9 +21,10 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    res.status(200).json(data);
+    const reply = data?.choices?.[0]?.message?.content || "No response from Gemini.";
+    return reply;
   } catch (err) {
     console.error("Gemini error:", err);
-    res.status(500).json({ error: "Gemini proxy error", message: err.message });
+    return "Error fetching Gemini response.";
   }
 }
