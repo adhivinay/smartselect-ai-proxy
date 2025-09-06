@@ -1,50 +1,46 @@
+// mistral-copilot.js
+
+export async function getCopilotResponse(prompt = "Hello from Copilot!") {
+  const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
+
+  const body = {
+    model: "mistral-tiny",
+    messages: [{ role: "user", content: prompt }]
+  };
+
+  try {
+    const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${MISTRAL_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+    const reply = data?.choices?.[0]?.message?.content || "No response from Copilot.";
+    return reply;
+  } catch (error) {
+    console.error("❌ Mistral API error:", error);
+    return "Error fetching Copilot response.";
+  }
+}
+
+// Optional: keep original endpoint handler
 export default async function handler(req, res) {
-  // ✅ Allow any origin
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  // ✅ Handle preflight
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const { prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: "Prompt is required" });
 
-  if (!prompt) {
-    return res.status(400).json({ error: "Prompt is required" });
-  }
-
-  try {
-    const mistralResponse = await fetch("https://api.mistral.ai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.MISTRAL_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "mistral-tiny",
-        messages: [
-          {
-            role: "user",
-            content: prompt
-          }
-        ]
-      })
-    });
-
-    const data = await mistralResponse.json();
-    console.log("✅ Mistral API raw response:", data);
-    res.status(200).json(data);
-
-  } catch (error) {
-    console.error("❌ Mistral API error:", error);
-    res.status(500).json({ error: "Failed to connect to Mistral API" });
-  }
+  const reply = await getCopilotResponse(prompt);
+  res.status(200).json({ reply });
 }
 
 export const config = {
@@ -52,3 +48,4 @@ export const config = {
     bodyParser: true
   }
 };
+
