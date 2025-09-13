@@ -4,9 +4,9 @@ export async function getGrokResponse(prompt = "Hello from Grok (Groq)!") {
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
   const body = {
-    model: "llama3-70b-8192",
-    messages: [{ role: "user", content: prompt }],
-  };
+  model: "llama-3.3-70b-versatile",
+  messages: [{ role: "user", content: prompt }],
+};
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -40,5 +40,6 @@ export default async function handler(req, res) {
   const reply = await getGrokResponse(prompt);
   res.status(200).json({ reply });
 }
+
 
 
